@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WordWise Vocabulary Challenge</title><style>
+:root{--p:#6256cf;--ink:#1d2540;--muted:#68718a;--line:#e4e6f0}*{box-sizing:border-box}body{margin:0;background:#f6f7fc;color:var(--ink);font:16px/1.5 system-ui,Arial}header{background:linear-gradient(120deg,#252b59,#6558d3);color:white;padding:28px 18px}header,main,footer{padding-left:max(16px,calc((100% - 900px)/2));padding-right:max(16px,calc((100% - 900px)/2))}.brand{font-size:13px;letter-spacing:2px;font-weight:800}.hero{font-size:clamp(30px,6vw,44px);font-weight:800;margin:10px 0}.sub{color:#e6e5ff}main{padding-top:20px;padding-bottom:40px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 6px 24px #20264b08}h2{margin:0 0 8px}p{margin:8px 0}.muted{color:var(--muted)}.notice{background:#fff7e6;border:1px solid #f1dfb4;border-radius:12px;padding:12px;font-size:13px;color:#79551d}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}button{font:inherit;font-weight:700;border:0;border-radius:11px;padding:11px 15px;cursor:pointer;background:#eeeaff;color:#4338a4}.primary,.active{background:var(--p);color:white}.hidden{display:none!important}.qmeta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px}.bar{height:7px;background:#ececf5;border-radius:9px;margin:12px 0 20px;overflow:hidden}.bar span{display:block;height:100%;background:var(--p)}.question{font-size:21px;font-weight:800;margin:15px 0}.options{display:grid;gap:9px}.option{width:100%;text-align:left;display:flex;gap:10px;align-items:center;background:white;color:var(--ink);border:1px solid var(--line);font-weight:500}.option.selected{border:2px solid var(--p);background:#f7f5ff;padding:10px 14px}.letter{background:#eeeaff;color:#4d42ac;border-radius:8px;padding:4px 9px;font-weight:800}.controls{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}.field{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit}.written{padding:14px 0;border-bottom:1px solid var(--line)}textarea{min-height:85px}.words{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}.word{background:#f8f9fd;border:1px solid var(--line);border-radius:10px;padding:10px}.word b{display:block}.word span{color:var(--muted);font-size:14px}footer{font-size:12px;color:var(--muted);padding-bottom:25px}
+</style></head><body><header><div class="brand">✦ WORDWISE</div><div class="hero">Vocabulary Challenge</div><div class="sub">Choose the closest meaning. The options are intentionally similar, so read carefully.</div></header><main>
+<section class="card"><h2>Welcome to your test</h2><p class="muted">Part 1 has one MCQ for each vocabulary item. Part 2 contains written responses for your teacher to review.</p><div class="notice">Important: this is still a preview. Answers stay in this browser and are not sent to your teacher or synced to another device. Do not enter private information.</div></section>
+<div class="tabs"><button class="active" id="tQuiz" onclick="tab('quiz')">Part 1 · MCQs</button><button id="tWrite" onclick="tab('write')">Part 2 · Written</button><button id="tList" onclick="tab('list')">Vocabulary list</button></div>
+<section class="card" id="quiz"><div class="qmeta"><span id="num"></span><span id="count"></span></div><div class="bar"><span id="bar"></span></div><div id="quizBody"><div class="question" id="question"></div><div class="options" id="options"></div><div class="controls"><button id="prev" onclick="move(-1)">← Previous</button><button class="primary" id="next" onclick="move(1)">Next →</button></div></div><div id="result" class="hidden"></div></section>
+<section class="card hidden" id="write"><h2>Written answers</h2><p class="muted">Write in your own words. These are not auto-graded.</p><div id="fields"></div><button class="primary" onclick="save()">Save on this device</button> <button onclick="download()">Download answers</button><p class="muted" id="msg"></p></section>
+<section class="card hidden" id="list"><h2>Vocabulary list</h2><div class="words" id="words"></div></section>
+</main><footer>WordWise · Confirm uncertain spellings or meanings with your teacher.</footer>
+<script>
+const V=[
+["Ehteraam","respect; honour","esteem; regard","courtesy; deference","Respect; honour"],
+["Nashukr","ungrateful","unappreciative","dissatisfied","Ungrateful; not thankful"],
+["Aitbaar","trust; faith","confidence; belief","reliance; certainty","Trust; faith"],
+["Baraye meharbani","kindly; please","politely; courteously","graciously; considerately","Kindly; please"],
+["Zaeef","frail; weak","delicate; feeble","fragile; lacking strength","Frail; weak"],
+["Muhafiz","guardian; protector","defender; custodian","keeper; safeguard","Guardian; protector"],
+["Inaayat","grace; kindness; favour","benevolence; generosity","kindness; gracious favour","Grace; kindness; favour"],
+["Munafiq","hypocrite","pretender; two-faced person","someone whose actions contradict beliefs","Hypocrite"],
+["Mutasir","impressed; affected","moved; influenced","struck by an impression","Impressed; affected"],
+["Uns","affection; fondness","warmth; attachment","closeness; tender liking","Affection; fondness"],
+["Ilm","knowledge","learning; understanding","information gained through study","Knowledge"],
+["Muntazir","one who awaits","expectant; waiting person","someone anticipating an event","One who awaits"],
+["Mehfooz","safe; protected","secure; sheltered","free from danger or harm","Safe; protected"],
+["Ba-dastoor","as usual; as before","customarily; in the usual way","according to established practice","As usual; as before"],
+["Mayassar","available; accessible","obtainable; within reach","able to be obtained or used","Available; accessible"],
+["Mehroom","deprived; lacking something","bereft; denied access","not having something desired","Deprived; lacking something"],
+["Mojaza","miracle","wonder; extraordinary event","event beyond ordinary explanation","Miracle"],
+["Mukhtalif","different; diverse","varied; unlike","not the same; showing variety","Different; diverse"],
+["Musalsal","continuous; constant","ongoing; uninterrupted","continuing without a break","Continuous; constant"],
+["Rivayat","tradition; custom","customary practice; inherited convention","practice passed through generations","Tradition; custom"],
+["Vasl","union; connection; meeting","joining; reunion","state of coming together","Union; connection; meeting"],
+["Mustaqbil / Mustaqbal","future","coming time; what lies ahead","time that has not happened yet","Future"],
+["Maazi","past","earlier time; what has happened","time before the present","Past"],
+["Mukhlis","sincere; loyal","genuine; devoted","honest in feeling; faithful","Sincere; loyal"],
+["Shagird","student; pupil; disciple","learner; apprentice","person who studies under a teacher","Student; pupil; disciple"],
+["Mazloom","oppressed; wronged person","victim of injustice","someone treated unfairly","Oppressed; wronged person"],
+["Sawaab","spiritual reward; merit","religious merit; reward for good deeds","reward believed earned through good deeds","Spiritual reward; merit"],
+["Nazreen","PLEASE CONFIRM spelling and meaning","please confirm intended word","check original spelling with teacher","Needs confirmation"],
+["Mulazim","employee; worker","staff member; employee","person employed to work for someone","Employee; worker"],
+["Mahroom","deprived; destitute","lacking; denied something","not having something necessary","Deprived; destitute"],
+["Maghroor","arrogant; conceited","self-important; vain","exaggerated sense of own importance","Arrogant; conceited"],
+["Mahroor","hot-tempered; furious","irritable; angered","quick to become angry","Hot-tempered; furious"],
+["Tarjuma","translation; interpretation","rendering into another language","meaning expressed in another language","Translation; interpretation"],
+["Taraana","song; melody","tune; anthem-like song","musical composition or song","Song; melody"],
+["Bakheel","miser; stingy person","ungenerous; unwilling to spend","reluctant to spend or share money","Miser; stingy person"],
+["Lateefa","joke; humorous anecdote","witty story; amusing remark","something told to make people laugh","Joke; humorous anecdote"],
+["Falsafa","philosophy","philosophical thought; study","study of fundamental ideas","Philosophy"],
+["Ikhtilaaf","difference; disagreement","dispute; divergence of opinion","lack of agreement","Difference; disagreement"],
+["Ikhtilaat","mixing; amalgamation","blending; intermingling","things mixing together","Mixing; amalgamation"],
+["Mauzuu","subject; topic; theme","matter under discussion","what a text or lesson is about","Subject; topic; theme"],
+["Tarjeeh","preference; priority","giving greater importance","choosing or ranking one thing above another","Preference; priority"],
+["Haqeer","insignificant; despicable","trivial; contemptible","regarded as unimportant or contemptible","Insignificant; despicable"],
+["Shafqat","affection; kindness; compassion","tender care; benevolence","gentle concern and caring treatment","Affection; kindness; compassion"],
+["Wazahat","explanation; clarification","elucidation; making clear","details that make something easier to understand","Explanation; clarification"]
+];
+const Q=V.map((v,i)=>{let a=[v[4],v[1],v[2],v[3]].filter((x,j,ar)=>ar.indexOf(x)===j).slice(0,4);let seed=i+19;for(let k=a.length-1;k>0;k--){seed=(seed*17+13)%997;let j=seed%(k+1);[a[k],a[j]]=[a[j],a[k]]}return {term:v[0],correct:v[4],opts:a,answer:a.indexOf(v[4])}});
+let pos=0,ans={},done=false;const $=id=>document.getElementById(id);function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function draw(){let q=Q[pos];$('num').textContent=`Question ${pos+1} of ${Q.length}`;$('count').textContent=`${Object.keys(ans).length} answered`;$('bar').style.width=`${(pos+1)/Q.length*100}%`;$('question').textContent=`What is the closest meaning of “${q.term}”?`;$('options').innerHTML=q.opts.map((o,i)=>`<button class="option ${ans[pos]===i?'selected':''}" onclick="pick(${i})"><span class="letter">${'ABCD'[i]}</span>${esc(o)}</button>`).join('');$('prev').disabled=pos===0;$('next').textContent=pos===Q.length-1?'Finish and score':'Next →';$('quizBody').classList.remove('hidden');$('result').classList.add('hidden')}
+function pick(i){if(!done){ans[pos]=i;draw()}}function move(d){if(d===1&&pos===Q.length-1){finish();return}pos=Math.max(0,Math.min(Q.length-1,pos+d));draw()}function finish(){done=true;let score=Q.filter((q,i)=>ans[i]===q.answer).length;$('quizBody').classList.add('hidden');$('result').classList.remove('hidden');$('result').innerHTML=`<h2>Your score: ${score} / ${Q.length}</h2><p>Answered ${Object.keys(ans).length} of ${Q.length}. Note: the “Nazreen” entry needs confirmation and should not be scored until your teacher confirms it.</p><button onclick="review()">Review answers</button> <button class="primary" onclick="restart()">Try again</button>`}
+function review(){$('result').innerHTML='<h2>Answer review</h2>'+Q.map((q,i)=>`<div class="written"><b>${i+1}. ${esc(q.term)}</b><p>${ans[i]===q.answer?'Correct':'Your answer: '+esc(q.opts[ans[i]]||'Not answered')}</p><p>Expected: ${esc(q.correct)}</p></div>`).join('')+'<button class="primary" onclick="restart()">Try again</button>'}function restart(){pos=0;ans={};done=false;draw()}
+function tab(x){['quiz','write','list'].forEach(y=>{$(y).classList.toggle('hidden',x!==y);$('t'+y[0].toUpperCase()+y.slice(1)).classList.toggle('active',x===y)})}
+const P=[["Write a sentence using Ehteraam."],["Write a sentence using Aitbaar."],["Explain what a Muhafiz does."],["Write a sentence using Inaayat."],["Use Muntazir in a sentence."],["Give an example of a Rivayat."],["Use Mukhlis in a sentence."],["Explain Mazloom in your own words."],["Write a sentence using Tarjeeh."],["Explain the difference between Wazahat and Tarjuma."]];
+$('fields').innerHTML=P.map((p,i)=>`<div class="written"><label for="a${i}">${i+1}. ${p[0]}</label><textarea class="field" id="a${i}" placeholder="Write your answer…"></textarea></div>`).join('');
+$('words').innerHTML=V.map(v=>`<div class="word"><b>${esc(v[0])}</b><span>${esc(v[1])}</span></div>`).join('');
+function save(){let data=P.map((p,i)=>({question:p[0],answer:$('a'+i).value}));try{localStorage.setItem('wordwise-written',JSON.stringify(data));$('msg').textContent='Saved only in this browser. Not sent to your teacher.'}catch(e){$('msg').textContent='Use Download answers instead.'}}
+function download(){let blob=new Blob([JSON.stringify({mcqAnswers:ans,written:P.map((p,i)=>({question:p[0],answer:$('a'+i).value}))},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='wordwise-answers.json';a.click();URL.revokeObjectURL(a.href);$('msg').textContent='Downloaded. Share the file manually with your teacher.'}
+draw();
+</script></body></html>
