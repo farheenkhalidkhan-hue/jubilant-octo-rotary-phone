@@ -140,26 +140,37 @@ async function save() {
     answer: document.getElementById('a' + i).value
   }));
 
+  const mcqAnswers = Q.map((q, i) => ({
+    question: q.term,
+    selectedAnswer: ans[i] === undefined ? null : q.opts[ans[i]],
+    correctAnswer: q.correct,
+    isCorrect: ans[i] === q.answer
+  }));
+
+  const score = Q.filter((q, i) => ans[i] === q.answer).length;
   const msg = document.getElementById('msg');
   msg.textContent = 'Submitting...';
 
   try {
-    const user = auth.currentUser || (await auth.signInAnonymously()).user;
+    const user = auth.currentUser ||
+      (await auth.signInAnonymously()).user;
+
     await db.collection('submissions').add({
-      mcqAnswers: ans,
+      mcqAnswers,
       writtenAnswers: written,
-      score: Q.filter((q, i) => ans[i] === q.answer).length,
+      score,
       totalQuestions: Q.length,
       studentId: user.uid,
       submittedAt: new Date().toISOString()
     });
+
     localStorage.setItem('wordwise-written', JSON.stringify(written));
     msg.textContent = 'Answers submitted successfully!';
   } catch (error) {
     console.error(error);
     msg.textContent = 'Could not submit. Please try again.';
   }
-  }
+                          }
 function download(){let blob=new Blob([JSON.stringify({mcqAnswers:ans,written:P.map((p,i)=>({question:p[0],answer:$('a'+i).value}))},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='wordwise-answers.json';a.click();URL.revokeObjectURL(a.href);$('msg').textContent='Downloaded. Share the file manually with your teacher.'}
 draw();
 </script></body></html>
