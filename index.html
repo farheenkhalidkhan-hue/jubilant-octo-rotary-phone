@@ -7,6 +7,20 @@
 <section class="card hidden" id="write"><h2>Written answers</h2><p class="muted">Write in your own words. These are not auto-graded.</p><div id="fields"></div><button class="primary" onclick="save()">Save on this device</button> <button onclick="download()">Download answers</button><p class="muted" id="msg"></p></section>
 <section class="card hidden" id="list"><h2>Vocabulary list</h2><div class="words" id="words"></div></section>
 </main><footer>WordWise · Confirm uncertain spellings or meanings with your teacher.</footer>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCdhlGhKhL8oE0F3Etoicu1ck4DM_ddBvs",
+  authDomain: "wordwise-ef54d.firebaseapp.com",
+  projectId: "wordwise-ef54d",
+  appId: "1:184485380169:web:3461d82a19aaa43b917f98"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+</script>
 <script>
 const V=[
 ["Ehteraam","respect; honour","esteem; regard","courtesy; deference","Respect; honour"],
@@ -63,7 +77,32 @@ function tab(x){['quiz','write','list'].forEach(y=>{$(y).classList.toggle('hidde
 const P=[["Write a sentence using Ehteraam."],["Write a sentence using Aitbaar."],["Explain what a Muhafiz does."],["Write a sentence using Inaayat."],["Use Muntazir in a sentence."],["Give an example of a Rivayat."],["Use Mukhlis in a sentence."],["Explain Mazloom in your own words."],["Write a sentence using Tarjeeh."],["Explain the difference between Wazahat and Tarjuma."]];
 $('fields').innerHTML=P.map((p,i)=>`<div class="written"><label for="a${i}">${i+1}. ${p[0]}</label><textarea class="field" id="a${i}" placeholder="Write your answer…"></textarea></div>`).join('');
 $('words').innerHTML=V.map(v=>`<div class="word"><b>${esc(v[0])}</b><span>${esc(v[1])}</span></div>`).join('');
-function save(){let data=P.map((p,i)=>({question:p[0],answer:$('a'+i).value}));try{localStorage.setItem('wordwise-written',JSON.stringify(data));$('msg').textContent='Saved only in this browser. Not sent to your teacher.'}catch(e){$('msg').textContent='Use Download answers instead.'}}
+async function save() {
+  const written = P.map((p, i) => ({
+    question: p[0],
+    answer: document.getElementById('a' + i).value
+  }));
+
+  const msg = document.getElementById('msg');
+  msg.textContent = 'Submitting...';
+
+  try {
+    const user = auth.currentUser || (await auth.signInAnonymously()).user;
+    await db.collection('submissions').add({
+      mcqAnswers: ans,
+      writtenAnswers: written,
+      score: Q.filter((q, i) => ans[i] === q.answer).length,
+      totalQuestions: Q.length,
+      studentId: user.uid,
+      submittedAt: new Date().toISOString()
+    });
+    localStorage.setItem('wordwise-written', JSON.stringify(written));
+    msg.textContent = 'Answers submitted successfully!';
+  } catch (error) {
+    console.error(error);
+    msg.textContent = 'Could not submit. Please try again.';
+  }
+  }
 function download(){let blob=new Blob([JSON.stringify({mcqAnswers:ans,written:P.map((p,i)=>({question:p[0],answer:$('a'+i).value}))},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='wordwise-answers.json';a.click();URL.revokeObjectURL(a.href);$('msg').textContent='Downloaded. Share the file manually with your teacher.'}
 draw();
 </script></body></html>
