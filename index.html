@@ -68,7 +68,66 @@ const V=[
 ["Shafqat","affection; kindness; compassion","tender care; benevolence","gentle concern and caring treatment","Affection; kindness; compassion"],
 ["Wazahat","explanation; clarification","elucidation; making clear","details that make something easier to understand","Explanation; clarification"]
 ];
-const Q=V.map((v,i)=>{let a=[v[4],v[1],v[2],v[3]].filter((x,j,ar)=>ar.indexOf(x)===j).slice(0,4);let seed=i+19;for(let k=a.length-1;k>0;k--){seed=(seed*17+13)%997;let j=seed%(k+1);[a[k],a[j]]=[a[j],a[k]]}return {term:v[0],correct:v[4],opts:a,answer:a.indexOf(v[4])}});
+
+const distractors = {
+  "Ehteraam": ["fear; fright", "jealousy; envy", "confusion; doubt"],
+  "Nashukr": ["generous; giving", "patient; calm", "curious; eager"],
+  "Aitbaar": ["anger; rage", "shame; embarrassment", "surprise; wonder"],
+  "Baraye meharbani": ["immediately; at once", "never; not once", "perhaps; possibly"],
+  "Zaeef": ["powerful; strong", "wealthy; rich", "clever; intelligent"],
+  "Muhafiz": ["teacher; instructor", "merchant; trader", "traveller; visitor"],
+  "Inaayat": ["punishment; penalty", "argument; dispute", "warning; threat"],
+  "Munafiq": ["honest; truthful person", "generous; giving person", "quiet; reserved person"],
+  "Mutasir": ["uninterested; bored", "unaware; uninformed", "unmoved; unaffected"],
+  "Uns": ["hatred; hostility", "fear; terror", "pride; arrogance"],
+  "Ilm": ["ignorance; lack of knowledge", "rumour; gossip", "imagination; fantasy"],
+  "Muntazir": ["one who teaches", "one who travels", "one who decides"],
+  "Mehfooz": ["in danger; at risk", "lost; missing", "damaged; broken"],
+  "Ba-dastoor": ["unexpectedly; suddenly", "rarely; seldom", "secretly; privately"],
+  "Mayassar": ["impossible to obtain", "already finished", "completely forgotten"],
+  "Mehroom": ["fully satisfied", "highly respected", "well prepared"],
+  "Mojaza": ["ordinary event", "planned meeting", "written agreement"],
+  "Mukhtalif": ["identical; exactly alike", "silent; speechless", "ancient; very old"],
+  "Musalsal": ["occasional; irregular", "temporary; short-lived", "once only"],
+  "Rivayat": ["personal opinion", "scientific discovery", "future prediction"],
+  "Vasl": ["separation; division", "competition; contest", "delay; postponement"],
+  "Mustaqbil / Mustaqbal": ["the distant past", "the present moment", "a forgotten memory"],
+  "Maazi": ["the coming years", "the present day", "a possible future"],
+  "Mukhlis": ["deceitful; dishonest", "careless; inattentive", "selfish; greedy"],
+  "Shagird": ["headmaster; principal", "doctor; physician", "shopkeeper; seller"],
+  "Mazloom": ["person who causes injustice", "person who gives orders", "person who wins a contest"],
+  "Sawaab": ["blame for wrongdoing", "financial loss", "physical strength"],
+  "Nazreen": ["PLEASE CONFIRM WORD", "PLEASE CONFIRM WORD", "PLEASE CONFIRM WORD"],
+  "Mulazim": ["employer; boss", "customer; buyer", "visitor; guest"],
+  "Mahroom": ["included; welcomed", "rewarded; honoured", "fully supplied"],
+  "Maghroor": ["humble; modest", "generous; charitable", "nervous; anxious"],
+  "Mahroor": ["peaceful; relaxed", "cheerful; delighted", "sleepy; tired"],
+  "Tarjuma": ["original composition", "spoken debate", "musical performance"],
+  "Taraana": ["legal document", "news report", "personal letter"],
+  "Bakheel": ["generous; open-handed", "brave; courageous", "polite; courteous"],
+  "Lateefa": ["serious warning", "historical record", "formal instruction"],
+  "Falsafa": ["physical exercise", "business transaction", "weather forecast"],
+  "Ikhtilaaf": ["complete agreement", "friendly greeting", "shared celebration"],
+  "Ikhtilaat": ["separation; isolation", "strict obedience", "complete silence"],
+  "Mauzuu": ["conclusion; ending", "author; writer", "audience; listeners"],
+  "Tarjeeh": ["rejection; refusal", "equal treatment of all", "unplanned accident"],
+  "Haqeer": ["important; influential", "magnificent; impressive", "valuable; precious"],
+  "Shafqat": ["cruelty; harshness", "indifference; apathy", "revenge; retaliation"],
+  "Wazahat": ["concealment; secrecy", "complication; confusion", "imitation; copying"]
+};
+
+const Q = V.map((v, i) => {
+  const correct = v[4];
+  const wrong = distractors[v[0]] || ["a different idea", "an unrelated action", "another concept"];
+  const opts = [correct, ...wrong];
+  let seed = i + 19;
+  for (let k = opts.length - 1; k > 0; k--) {
+    seed = (seed * 17 + 13) % 997;
+    const j = seed % (k + 1);
+    [opts[k], opts[j]] = [opts[j], opts[k]];
+  }
+  return { term: v[0], correct, opts, answer: opts.indexOf(correct) };
+});
 let pos=0,ans={},done=false;const $=id=>document.getElementById(id);function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function draw(){let q=Q[pos];$('num').textContent=`Question ${pos+1} of ${Q.length}`;$('count').textContent=`${Object.keys(ans).length} answered`;$('bar').style.width=`${(pos+1)/Q.length*100}%`;$('question').textContent=`What is the closest meaning of “${q.term}”?`;$('options').innerHTML=q.opts.map((o,i)=>`<button class="option ${ans[pos]===i?'selected':''}" onclick="pick(${i})"><span class="letter">${'ABCD'[i]}</span>${esc(o)}</button>`).join('');$('prev').disabled=pos===0;$('next').textContent=pos===Q.length-1?'Finish and score':'Next →';$('quizBody').classList.remove('hidden');$('result').classList.add('hidden')}
 function pick(i){if(!done){ans[pos]=i;draw()}}function move(d){if(d===1&&pos===Q.length-1){finish();return}pos=Math.max(0,Math.min(Q.length-1,pos+d));draw()}function finish(){done=true;let score=Q.filter((q,i)=>ans[i]===q.answer).length;$('quizBody').classList.add('hidden');$('result').classList.remove('hidden');$('result').innerHTML=`<h2>Your score: ${score} / ${Q.length}</h2><p>Answered ${Object.keys(ans).length} of ${Q.length}. Note: the “Nazreen” entry needs confirmation and should not be scored until your teacher confirms it.</p><button onclick="review()">Review answers</button> <button class="primary" onclick="restart()">Try again</button>`}
